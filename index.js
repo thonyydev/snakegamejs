@@ -1,105 +1,71 @@
-// Evento que é acionado quando o DOM (Document Object Model) é totalmente carregado
+// Aguarda o carregamento do DOM antes de executar o código
 document.addEventListener("DOMContentLoaded", function () {
-    // Tamanho de cada bloco no jogo
-    const blockSize = 25;
+    // Configurações do jogo
+    const blockSize = 25; // Tamanho de cada bloco
+    const rows = 20; // Número de linhas no tabuleiro
+    const cols = 20; // Número de colunas no tabuleiro
 
-    // Número de linhas e colunas no tabuleiro
-    const rows = 20;
-    const cols = 20;
-
-    // Variáveis para o tabuleiro e contexto de desenho
-    let board, context;
-
-    // Posição inicial da cabeça da cobra
-    let snakeX = blockSize * 5;
-    let snakeY = blockSize * 5;
-
-    // Velocidade inicial da cobra
-    let velocityX = 0;
-    let velocityY = 0;
-
-    // Corpo da cobra (posições anteriores da cabeça)
-    let snakeBody = [];
-
-    // Posição da comida
-    let foodX, foodY;
-
-    // Array para armazenar a posição dos obstáculos
-    let obstacles = [];
-
-    // Sinaliza se o jogo acabou
-    let gameOver = false;
-
-    // Pontuação do jogador
-    let score = 0;
-
-    // Velocidade inicial da cobra
-    let speed = 1;
+    // Variáveis do jogo
+    let board, context; // Elemento de tabuleiro e contexto de desenho
+    let snakeX = blockSize * 5; // Posição inicial X da cabeça da cobra
+    let snakeY = blockSize * 5; // Posição inicial Y da cabeça da cobra
+    let velocityX = 0; // Velocidade inicial X da cobra
+    let velocityY = 0; // Velocidade inicial Y da cobra
+    let snakeBody = []; // Array que armazena as posições do corpo da cobra
+    let foodX, foodY; // Posição da comida no tabuleiro
+    let obstacles = []; // Array para armazenar as posições dos obstáculos
+    let gameOver = false; // Flag para verificar se o jogo acabou
+    let score = 0; // Pontuação do jogador
+    let speed = 1; // Velocidade inicial da cobra
 
     // Função de inicialização do jogo
     function init() {
-        // Obtém o elemento do tabuleiro no DOM
+        // Obtém referências para o elemento de tabuleiro e seu contexto
         board = document.getElementById("board");
-
-        // Define a altura e largura do tabuleiro
-        board.height = rows * blockSize;
-        board.width = cols * blockSize;
-
-        // Obtém o contexto de desenho 2D
+        board.height = rows * blockSize; // Define a altura do tabuleiro
+        board.width = cols * blockSize; // Define a largura do tabuleiro
         context = board.getContext("2d");
 
-        // Coloca a comida no tabuleiro
+        // Coloca a comida e gera obstáculos
         placeFood();
-
-        // Gera obstáculos no tabuleiro
         generateObstacles();
 
-        // Adiciona um ouvinte de eventos para capturar pressionamentos de tecla
+        // Adiciona um ouvinte para o evento de pressionar teclas
         document.addEventListener("keyup", changeDirection);
 
-        // Define um intervalo para a função de atualização ser chamada a cada 100 milissegundos
+        // Atualiza o estado do jogo em intervalos regulares
         setInterval(update, 1000 / 10);
     }
 
     // Função de atualização do jogo
     function update() {
-        // Verifica se o jogo acabou
+        // Se o jogo acabou, retorna
         if (gameOver) {
             return;
         }
 
-        // Limpa o tabuleiro antes de cada atualização
+        // Limpa o tabuleiro, desenha obstáculos, comida, movimenta a cobra, a desenha e verifica colisões
         clearBoard();
-
-        // Desenha os obstáculos no tabuleiro
         drawObstacles();
-
-        // Desenha a comida no tabuleiro
         drawFood();
-
-        // Move a cobra
         moveSnake();
-
-        // Desenha a cobra no tabuleiro
         drawSnake();
-
-        // Verifica colisões com obstáculos e outras condições de término do jogo
         checkCollisions();
     }
 
-    // Limpa o tabuleiro desenhando um fundo preto
+    // Função para limpar o tabuleiro
     function clearBoard() {
         context.fillStyle = "black";
         context.fillRect(0, 0, board.width, board.height);
     }
 
-    // Desenha a comida no tabuleiro
+    // Função para desenhar a comida na tela
     function drawFood() {
         context.fillStyle = "red";
         context.fillRect(foodX, foodY, blockSize, blockSize);
     }
 
-    // Desenha os obstáculos no tabuleiro
+    // Função para desenhar os obstáculos na tela
     function drawObstacles() {
         context.fillStyle = "gray";
         for (let i = 0; i < obstacles.length; i++) {
@@ -107,30 +73,19 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Move a cobra
+    // Função para movimentar a cobra
     function moveSnake() {
-        // Calcula a nova posição da cabeça da cobra
-        const newHead = [snakeX + velocityX * blockSize * speed, snakeY + velocityY * blockSize * speed];
-
-        // Adiciona a posição atual da cabeça ao corpo da cobra
+        const newHead = [snakeX + velocityX * blockSize, snakeY + velocityY * blockSize];
         snakeBody.unshift([snakeX, snakeY]);
 
-        // Verifica se a cobra comeu a comida
+        // Se a cobra comeu a comida
         if (snakeX === foodX && snakeY === foodY) {
-            // Coloca uma nova comida no tabuleiro
             placeFood();
-
-            // Incrementa a pontuação
             score += 1;
-
-            // Aumenta a velocidade quando come uma comida
             speed += 0.1;
-
-            // Atualiza a pontuação exibida na tela
             updateScore();
         } else {
-            // Remove a última posição do corpo da cobra se não comeu uma comida
-            snakeBody.pop();
+            snakeBody.pop(); // Remove a última parte do corpo
         }
 
         // Atualiza a posição da cabeça da cobra
@@ -144,20 +99,20 @@ document.addEventListener("DOMContentLoaded", function () {
         if (snakeY >= rows * blockSize) snakeY = 0;
     }
 
-    // Desenha a cobra no tabuleiro
+    // Função para desenhar a cobra na tela
     function drawSnake() {
-        context.fillStyle = "lime";
-
         // Desenha a cabeça da cobra
+        context.fillStyle = "lime";
         context.fillRect(snakeX, snakeY, blockSize, blockSize);
 
         // Desenha o corpo da cobra
+        context.fillStyle = "lime";
         for (let i = 0; i < snakeBody.length; i++) {
             context.fillRect(snakeBody[i][0], snakeBody[i][1], blockSize, blockSize);
         }
     }
 
-    // Gera obstáculos aleatoriamente no tabuleiro
+    // Função para gerar obstáculos aleatórios
     function generateObstacles() {
         for (let i = 0; i < 5; i++) {
             const obstacleX = Math.floor(Math.random() * cols) * blockSize;
@@ -168,35 +123,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Função chamada quando o jogo termina
     function gameOverHandler() {
-        // Sinaliza o fim do jogo
         gameOver = true;
-
-        // Exibe um alerta com a pontuação do jogador
         alert("Game Over. Your Score: " + score);
-
-        // Recarrega a página para reiniciar o jogo
-        location.reload();
+        location.reload(); // Recarrega a página para reiniciar o jogo
     }
 
-    // Verifica colisões com obstáculos e outras condições de término do jogo
+    // Função para verificar colisões
     function checkCollisions() {
         // Verifica colisões com obstáculos
         if (obstacles.some(obstacle => obstacle[0] === snakeX && obstacle[1] === snakeY)) {
             gameOverHandler();
         }
 
-        // Verifica outras condições de término do jogo
+        // Verifica colisões com as bordas do tabuleiro e o próprio corpo da cobra
         if (
             snakeX < 0 || snakeX >= cols * blockSize ||
             snakeY < 0 || snakeY >= rows * blockSize ||
             snakeBody.some(part => part[0] === snakeX && part[1] === snakeY)
         ) {
-            // Chama a função de término do jogo
             gameOverHandler();
         }
     }
 
-    // Função chamada quando uma tecla é pressionada para alterar a direção da cobra
+    // Função para alterar a direção da cobra com base nas teclas pressionadas
     function changeDirection(e) {
         switch (e.code) {
             case "ArrowUp":
@@ -230,17 +179,17 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Coloca uma nova comida em uma posição aleatória do tabuleiro
+    // Função para posicionar a comida em uma posição aleatória no tabuleiro
     function placeFood() {
         foodX = Math.floor(Math.random() * cols) * blockSize;
         foodY = Math.floor(Math.random() * rows) * blockSize;
     }
 
-    // Atualiza a pontuação exibida na tela
+    // Função para atualizar a pontuação exibida no HTML
     function updateScore() {
         document.getElementById('score').innerText = 'Score: ' + score;
     }
 
-    // Chama a função de inicialização do jogo
+    // Inicia o jogo
     init();
 });
